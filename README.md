@@ -13,3 +13,6 @@ backend commant :
      dotnet clean 
      dotnet build 
      dotnet run
+
+frontend cmd:
+     npm run dev 
