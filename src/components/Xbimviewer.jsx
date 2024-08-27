@@ -1,12 +1,20 @@
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { LoaderOverlay, Grid, NavigationCube, Viewer, ViewType, CameraType, InteractiveClippingPlane } from '@xbim/viewer';
 
-const Xbimviewer = () => {
+const Xbimviewer = ({fileName} ) => {
+    
     const viewerRef = useRef(null);
     const viewerInstance = useRef(null); // Reference to the viewer instance
+    const viewerInstance2 = useRef(null); 
     const gridInstance = useRef(null); // Reference to the grid plugin instance
     const cubeInstance = useRef(null); // Reference to the cube plugin instance
     const clippingPlaneInstance = useRef(null); // 
+
+    const [file, setFileName] = useState(fileName);
+
+    useEffect(() => {
+        setFileName(fileName);
+    }, [fileName]);
 
     const [cubeStopped, setCubeStopped] = useState(false);
     const [gridStopped, setGridStopped] = useState(false);
@@ -17,8 +25,9 @@ const Xbimviewer = () => {
 
     const initializeViewer = useCallback(() => {
         const viewer = new Viewer("xBIM-viewer");
-        const viewer2 = new Viewer("viewer2");
         viewerInstance.current = viewer; // Store the viewer instance
+        const viewer2 = new Viewer("viewer2");
+        viewerInstance2.current = viewer2;
 
         const overlay = new LoaderOverlay();
         viewer.addPlugin(overlay);
@@ -50,8 +59,15 @@ const Xbimviewer = () => {
             window.requestAnimationFrame(sync);
         };
         window.requestAnimationFrame(sync);
-        viewer.load('/SampleHouse.wexbim');
-        viewer2.loadAsync('/SampleHouse.wexbim');
+        // console.log('file',file);
+        
+        if(file){
+            viewer.load('ConvertedFiles/'+ file);
+            viewer2.loadAsync('ConvertedFiles/' + file);
+        }else{
+            viewer.load('ConvertedFiles/tmpsce00a.wexbim');
+            viewer2.loadAsync('ConvertedFiles/tmpsce00a.wexbim');
+        }
 
         viewer.on('loaded', () => {
             viewer.start();
@@ -59,11 +75,11 @@ const Xbimviewer = () => {
             overlay.hide();
             viewer.show(ViewType.DEFAULT, undefined, undefined, false);
         });
-    }, []);
+    }, [file]);
 
     useEffect(() => {
         initializeViewer();
-    }, [initializeViewer]);
+    }, [initializeViewer,fileName]);
 
     useEffect(() => {
         if (gridInstance.current) {
@@ -171,9 +187,38 @@ const Xbimviewer = () => {
     const updateContrast = (event) => setContrast(event.target.value);
     const updateBrightness = (event) => setBrightness(event.target.value);
 
+
+    // const loadFile = (event) => {
+    //     const file = event.target.files[0];
+    //     if (file && viewerInstance.current) {
+    //         const reader = new FileReader();
+    //         reader.onload = () => {
+    //             const arrayBuffer = reader.result;
+    
+    //             const blob = new Blob([arrayBuffer], { type: 'application/octet-stream' });
+    //             const url = URL.createObjectURL(blob);
+    
+    //             // Load the model into both viewers
+    //             if (viewerInstance.current) {
+    //                 viewerInstance.current.load(url);
+    //                 viewerInstance.current.start(); // Start rendering the viewer
+    //             }
+    //             if (viewerInstance2.current) {
+    //                 viewerInstance2.current.load(url);
+    //                 viewerInstance2.current.start(); // Start rendering the viewer
+    //             }
+    
+    //             // Clean up the URL after loading
+    //             URL.revokeObjectURL(url);
+    //         };
+    //         reader.readAsArrayBuffer(file);
+    //     }
+    // };
+    
+
     return (
         <div className="ViewerWrapper" ref={viewerRef}>
-            <canvas id="xBIM-viewer" width="1400" height="900"></canvas>
+            <canvas id="xBIM-viewer" width="1400" height="750"></canvas>
             <div style={{ position: "absolute", left: 0, bottom: 0, width: 400, height: 200 }}>
                 <canvas id="viewer2" />
             </div>
